@@ -18,11 +18,15 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private EditText editText;
     private String dataString;
     private TextView dataReceive;
+    private List<String> pidList = new ArrayList<>();
+    private List<String> processList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,10 @@ public class MainActivity extends AppCompatActivity {
                 new SendMessage().execute(editText.getText().toString());
             }
         });
+    }
+
+    private void setList(){
+
     }
 
     @Override
@@ -72,13 +80,13 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(String... strings) {
 
             try {
-                Socket socket = new Socket("192.168.1.8", 8888);
+                Socket socket = new Socket("192.168.10.89", 8888);
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
                 printWriter.print(strings[0]);
                 printWriter.flush();
                 Log.d("prtm", "Print writer flushed");
 
-                byte[] messageByte = new byte[1000];
+                final byte[] messageByte = new byte[1000];
                 boolean end = false;
                 final StringBuilder dataString = new StringBuilder();
                 DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -86,20 +94,30 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        MainActivity.this.dataString+="\n"+dataString.toString();
+                        MainActivity.this.dataString += "\n" + dataString.toString();
                         dataReceive.setText(MainActivity.this.dataString);
+                        for (String s : dataString.toString().split("\n")) {
+                            Log.d("prtm", "prtm: :" + s);
+                            pidList.add(s.split(",")[0]);
+                            processList.add(s.split(",")[1]);
+                        }
+                        pidList.remove(0);
+                        processList.remove(0);
+                        Log.d("prtm", pidList.toString());
+                        Log.d("prtm", processList.toString());
                     }
                 });
 
 //                DataInputStream in = new DataInputStream(socket.getInputStream());
 //
 //                while (!end) {
-//                    int bytesRead = in.read(messageByte);
+//                    final int bytesRead = in.read(messageByte);
 //                    dataString.append(new String(messageByte, 0, bytesRead));
 //                    runOnUiThread(new Runnable() {
 //                        @Override
 //                        public void run() {
-//                            dataReceive.setText(dataString.toString());
+//                            pidList.add(new String(messageByte, 0, bytesRead));
+//                            processList.add(new String(messageByte, 0, bytesRead));
 //                        }
 //                    });
 //                    if (dataString.toString().length() == 1000) {
