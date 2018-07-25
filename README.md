@@ -1,1 +1,2 @@
-# pyAndroid-Socket-Demo
+# py-and-socket
+Python and Android Socket Connection Test
